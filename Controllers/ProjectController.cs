@@ -1,18 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
+using ProjectManagement.Data;
 using ProjectManagement.Models;
 
 namespace ProjectManagement.Controllers;
 
 public class ProjectsController : Controller
 {
+    private readonly ApplicationDbContext _context;
+
+    public ProjectsController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     // Displays a list of all projects.
     [HttpGet]
     public IActionResult Index()
     {
-        var projects = new List<Project>()
+        var projects = _context.Projects.ToList();
+        if (projects == null)
         {
-            new Project { ProjectId = 1, Name = "Project 1", Description = "First Project" },
-        };
+            return NotFound();
+        }
         return View(projects);
     }
 
@@ -34,12 +43,11 @@ public class ProjectsController : Controller
     [HttpGet]
     public IActionResult Details(int id)
     {
-        var project = new Project
+        var project = _context.Projects.FirstOrDefault(p => p.ProjectId == id);
+        if (project == null)
         {
-            ProjectId = id,
-            Name = "Project " + id,
-            Description = "Details of Project " + id
-        };
+            return NotFound();
+        }
         return View(project);
     }
 }
